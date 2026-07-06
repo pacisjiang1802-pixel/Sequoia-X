@@ -1,0 +1,56 @@
+name: Sequoia-X Backfill
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: sequoia-x-db
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      DB_PATH: data/sequoia_v2.db
+      START_DATE: ${{ vars.START_DATE || '2024-01-01' }}
+      FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL || 'https://open.feishu.cn/open-apis/bot/v2/hook/placeholder' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Restore Sequoia database
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: data/sequoia_v2.db
+          key: sequoia-db-${{ github.run_id }}
+          restore-keys: |
+            sequoia-db-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .
+
+      - name: Backfill A-share history
+        run: python main.py --backfill
+
+      - name: Show database size
+        if: always()
+        run: |
+          ls -lh data || true
+          test -f data/sequoia_v2.db && du -h data/sequoia_v2.db || true
+
+      - name: Save Sequoia database
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data/sequoia_v2.db
+          key: sequoia-db-${{ github.run_id }}
