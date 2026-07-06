@@ -1,3 +1,11 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["sequoia_x*"]
+exclude = ["data*", "tests*"]
+
 [project]
 name = "sequoia-x"
 version = "2.0.0"
