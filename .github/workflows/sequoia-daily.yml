@@ -2,7 +2,7 @@ name: Sequoia-X Daily Picks
 
 on:
   schedule:
-    - cron: '23 11 * * 1-5' # Beijing time 19:23, Monday-Friday
+    - cron: '28 7 * * 1-5' # Beijing time 15:28, Monday-Friday
   workflow_dispatch:
 
 concurrency:
